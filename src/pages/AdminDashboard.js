@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
+const badgeStyle = {
+  position: 'absolute',
+  top: '-5px',
+  right: '-10px',
+  backgroundColor: 'red',
+  color: 'white',
+  borderRadius: '50%',
+  padding: '5px 8px',
+  fontSize: '12px',
+  fontWeight: 'bold',
+};
+
 const AdminDashboard = ({ children }) => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [normalUserMessages, setNormalUserMessages] = useState(4);
+  const [endUserMessages, setEndUserMessages] = useState(5);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -27,7 +42,7 @@ const AdminDashboard = ({ children }) => {
 
         <div style={{ display: 'flex', gap: '20px', position: 'relative' }}>
           <a href="#" style={navLinkStyle}>Home</a>
-          <a href="#" style={navLinkStyle}>Settings</a>
+          <a href="#" style={navLinkStyle} onClick={() => navigate('/SettingsTemplate')}>Settings</a>
 
           {/* Templates Dropdown */}
           <div style={dropdownContainerStyle} 
@@ -52,8 +67,15 @@ const AdminDashboard = ({ children }) => {
               </div>
             )}
           </div>
-          <span onClick={() => navigate('/AdminNormalUserChat')} style={navLinkStyle}>Normal User Chat</span>
-          <span onClick={() => navigate('/AdminEndUserChat')} style={navLinkStyle}>End User Chat</span>
+          <span onClick={() => navigate('/AdminNormalUserChat')} style={navLinkStyle}>
+                Normal User Chat
+                {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>}
+            </span>
+
+            <span onClick={() => navigate('/AdminEndUserChat')} style={navLinkStyle}>
+                End User Chat
+                {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>}
+            </span>
         </div>
 
         <button onClick={handleLogout} style={{

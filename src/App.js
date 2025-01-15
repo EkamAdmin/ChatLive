@@ -11,6 +11,7 @@ import CreateMessage from './pages/CreateMessage';
 import ViewMessage from './pages/ViewMessage';
 import AdminEndUserChat from './pages/AdminEndUserChat';
 import AdminNormalUserChat from './pages/AdminNormalUserChat';
+import SettingsTemplate from './pages/SettingsTemplate';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,6 +23,8 @@ const App = () => {
           <Route path="/" element={<Login />} />
           <Route path="/Dashboard" element={<PrivateRoute element={<Dashboard />} />} />
           <Route path="/AdminDashboard" element={<PrivateRoute element={<AdminDashboard />} />} />
+
+          <Route path="/SettingsTemplate" element={<PrivateRoute element={<SettingsTemplate />} />} />
 
           <Route path="/CreateTemplate" element={<PrivateRoute element={<CreateTemplate />} />} />
           <Route path="/ViewTemplate" element={<PrivateRoute element={<ViewTemplates />} />} />

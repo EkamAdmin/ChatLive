@@ -2,26 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
+const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, selectedPlayer }) => {
   return (
-    <div
-      style={{
+    <div style={{
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         backgroundColor: 'rgb(255 255 255)',
         borderRadius: '18px',
-      }}
-    >
-      <div
-        style={{
+    }}>
+      <div style={{
           padding: '8px',
           backgroundColor: 'rgb(88 98 97)',
           color: '#fff',
           textAlign: 'center',
           borderRadius: '5px 5px 0 0',
-        }}
-      >
+      }}>
         <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
         {selectedPlayer && (
           <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
@@ -30,41 +26,24 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
         )}
       </div>
 
-      <div
-        style={{
-          flexGrow: 1,
-          padding: '8px',
-          backgroundColor: '#f0f0f0',
-          borderTop: '1px solid #ddd',
-          overflowY: 'auto',
-        }}
-      >
-        {currentTemplateDescription && (
-          <div style={{ padding: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px' }}>
-            <p>{currentTemplateDescription}</p>
-          </div>
-        )}
-        
-       </div>
-
-      <div
-        style={{
+      {/* Input Field with currentTemplateDescription as value */}
+      <div style={{
           padding: '8px',
           backgroundColor: '#f0f0f0',
           borderTop: '1px solid #ddd',
           borderRadius: '0 0 5px 5px',
-        }}
-      >
-        <form
-          style={{
+      }}>
+        <form style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-          }}
-        >
+        }}>
+          
           <input
             type="text"
             placeholder="Type a message..."
+            value={currentTemplateDescription}  // ✅ Append template description
+            onChange={(e) => setCurrentTemplateDescription(e.target.value)} // ✅ Allow editing
             style={{
               width: 'calc(100% - 120px)',
               padding: '8px',
@@ -72,7 +51,6 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
               border: '1px solid #ccc',
             }}
           />
-          
           <label
             style={{
               padding: '8px 12px',
@@ -105,7 +83,6 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
               }}
             />
           </label>
-
           <button
             type="submit"
             style={{
@@ -148,7 +125,9 @@ const Dashboard = () => {
   const fetchAllPlayers = async () => {
     try {
       const response = await axios.get('http://localhost:5001/Player/getAllPlayers');
-      setPlayers(response.data.data);
+      const filteredPlayers = response.data.data.filter((player) => player.playerID !== "" && player.isAdmin === false);
+
+      setPlayers(filteredPlayers);
     } catch (err) {
       console.error('Error fetching players');
     }
@@ -211,23 +190,26 @@ const Dashboard = () => {
                     <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '0' }}>{player.playerName}</p>
                     <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}></p>
                   </div>
+                 
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '12px', color: '#4CAF50', margin: '0' }}>{`${Math.floor(Math.random() * 12) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`}</p>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        backgroundColor: '#25D366',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        padding: '5px 8px',
-                        borderRadius: '50%',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Math.floor(Math.random() * 10)}
-                    </div>
-                  </div>
+  <p style={{ fontSize: '12px', color: '#4CAF50', margin: '0' }}>
+    {`${Math.floor(Math.random() * 12) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`}
+  </p>
+  <div
+    style={{
+      display: 'inline-block',
+      backgroundColor: Math.random() > 0.5 ? '#FFA500' : '#FF0000', // Randomly choose between orange and red
+      color: 'white',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      padding: '5px 8px',
+      borderRadius: '50%',
+      textAlign: 'center',
+    }}
+  >
+    {Math.floor(Math.random() * 10)}
+  </div>
+</div>
                 </li>
               ))}
             </ul>
@@ -236,12 +218,10 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Chat UI */}
         <div style={{ flex: 1.5, padding: '16px', backgroundColor: 'rgb(200 200 200)', marginRight: '8px', borderRadius: '18px', display: 'flex', flexDirection: 'column' }}>
           <ChatUI currentTemplateDescription={currentTemplateDescription} selectedPlayer={selectedPlayer} />
         </div>
 
-        {/* Template List */}
         <div style={{ flex: 0.75, padding: '16px', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '18px', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
           {templates.length > 0 ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>

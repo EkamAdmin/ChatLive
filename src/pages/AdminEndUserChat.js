@@ -24,7 +24,7 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
           borderRadius: '5px 5px 0 0',
         }}
       >
-        <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
+        {/* <h2 style={{ fontSize: '16px' }}>Chat Room</h2> */}
         {selectedPlayer && (
           <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
             <p><strong>Chatting with:</strong> {selectedPlayer.playerName} (ID: {selectedPlayer.playerID})</p>
@@ -150,7 +150,9 @@ const AdminEndUserChat = () => {
   const fetchAllPlayers = async () => {
     try {
       const response = await axios.get('http://localhost:5001/Player/getAllPlayers');
-      setPlayers(response.data.data);
+      const filteredPlayers = response.data.data.filter(player => player.playerID !== "" && player.isAdmin === false);
+
+      setPlayers(filteredPlayers);
     } catch (err) {
       console.error('Error fetching players');
     }
