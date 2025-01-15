@@ -52,8 +52,8 @@ const AdminDashboard = ({ children }) => {
               </div>
             )}
           </div>
-          <a href="#" style={navLinkStyle}>Normal User Chat</a>
-          <a href="#" style={navLinkStyle}>End User Chat</a>
+          <span onClick={() => navigate('/AdminNormalUserChat')} style={navLinkStyle}>Normal User Chat</span>
+          <span onClick={() => navigate('/AdminEndUserChat')} style={navLinkStyle}>End User Chat</span>
         </div>
 
         <button onClick={handleLogout} style={{
