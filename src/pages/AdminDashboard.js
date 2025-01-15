@@ -36,8 +36,8 @@ const AdminDashboard = ({ children }) => {
             <span style={navLinkStyle}>Templates ▼</span>
             {dropdownOpen === 'templates' && (
               <div style={dropdownMenuStyle}>
-                <span onClick={() => navigate('/create-template')} style={dropdownItemStyle}>Create Template</span>
-                <span onClick={() => navigate('/view-templates')} style={dropdownItemStyle}>View Templates</span>
+                <span onClick={() => navigate('/CreateTemplate')} style={dropdownItemStyle}>Create Template</span>
+                <span onClick={() => navigate('/ViewTemplate')} style={dropdownItemStyle}>View Template</span>
               </div>
             )}
           </div>
@@ -47,8 +47,8 @@ const AdminDashboard = ({ children }) => {
             <span style={navLinkStyle}>Welcome Messages ▼</span>
             {dropdownOpen === 'welcome' && (
               <div style={dropdownMenuStyle}>
-                <span onClick={() => navigate('/create-welcomemessage')} style={dropdownItemStyle}>Create Message</span>
-                <span onClick={() => navigate('/view-welcomemessage')} style={dropdownItemStyle}>View Message</span>
+                <span onClick={() => navigate('/CreateMessage')} style={dropdownItemStyle}>Create Message</span>
+                <span onClick={() => navigate('/ViewMessage')} style={dropdownItemStyle}>View Message</span>
               </div>
             )}
           </div>
