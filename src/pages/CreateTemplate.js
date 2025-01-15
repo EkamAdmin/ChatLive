@@ -26,7 +26,7 @@ const CreateTemplate = () => {
 
       if (response.status === 200) {
         console.log('Template added successfully');
-        navigate('/view-templates');
+        navigate('/ViewTemplate');
       }
     } catch (err) {
       setErrorMessage('Error adding template');
@@ -47,11 +47,10 @@ const CreateTemplate = () => {
             style={inputStyle}
           />
 
-           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px' }}>Template Description:</label>
+           <label style={labelStyle}>Template Description:</label>
             <textarea
               value={templateDescription}
               onChange={(e) => setTemplateDescription(e.target.value)}
-              placeholder="Enter template description"
               style={{ width: '100%', padding: '6px', marginBottom: '8px', borderRadius: '4px', border: '1px solid #ccc', height: '100px' }}
             />
 
