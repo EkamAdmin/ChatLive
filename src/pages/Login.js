@@ -20,7 +20,8 @@ const Login = () => {
 
        const player = response.data.data;
         // Store the auth token in localStorage
-        // localStorage.setItem('authToken', player.playerID);  // Assuming playerID is the token
+         localStorage.setItem('authToken', player.playerID);  // Assuming playerID is the token
+        
         if (player.isAdmin) {
           navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
         } else {
