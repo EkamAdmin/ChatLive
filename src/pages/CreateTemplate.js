@@ -1,42 +1,62 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CreateTemplate = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get template ID if editing
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
- const [errorMessage, setErrorMessage] = useState('');
-  
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Fetch existing template when editing
+  useEffect(() => {
+    if (id) {
+      axios.get(`http://localhost:5001/template/GetTemplate/${id}`)
+        .then(response => {
+          if (response.data && response.data.data) {
+            setTemplateName(response.data.data.templateName);
+            setTemplateDescription(response.data.data.templateDescription);
+          }
+        })
+        .catch(() => setErrorMessage('Error fetching template.'));
+    }
+  }, [id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!templateName) {
+      setErrorMessage('Template name is required');
+      return;
+    }
 
-    if (!templateName || !templateDescription) {
-      setErrorMessage('Template Name and Description are required');
+    const confirmSave = window.confirm('Do you want to save this template?');
+    if (!confirmSave) {
+      toast.warning('Action was canceled');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5001/template/AddTemplate', {
-        templateName,
-        templateDescription, // Save the Draft.js content as JSON
-      });
-
-      if (response.status === 200) {
-        console.log('Template added successfully');
-        navigate('/ViewTemplate');
+      if (id) {
+        await axios.put(`http://localhost:5001/template/UpdateTemplate/${id}`, { templateName, templateDescription });
+      } else {
+        await axios.post('http://localhost:5001/template/AddTemplate', { templateName, templateDescription });
       }
+      toast.success('Template saved successfully!');
+      navigate('/ViewTemplate');
     } catch (err) {
-      setErrorMessage('Error adding template');
+      toast.error('Error saving template');
     }
   };
 
   return (
     <AdminDashboard>
       <div style={cardContainerStyle}>
-        <h2 style={headingStyle}>Create a New Template</h2>
+        <h2 style={headingStyle}>{id ? 'Update' : 'Create'} Template</h2>
         <form onSubmit={handleSubmit} style={formStyle}>
           <label style={labelStyle}>Template Name:</label>
           <input
@@ -46,24 +66,21 @@ const CreateTemplate = () => {
             required
             style={inputStyle}
           />
-
-           <label style={labelStyle}>Template Description:</label>
-            <textarea
-              value={templateDescription}
-              onChange={(e) => setTemplateDescription(e.target.value)}
-              style={{ width: '100%', padding: '6px', marginBottom: '8px', borderRadius: '4px', border: '1px solid #ccc', height: '100px' }}
-            />
-
-          <button type="submit" style={buttonStyle}>Create Template</button>
+          <label style={labelStyle}>Template Description:</label>
+          <textarea
+            value={templateDescription}
+            onChange={(e) => setTemplateDescription(e.target.value)}
+            style={inputStyle}
+          />
+          <button type="submit" style={buttonStyle}>{id ? 'Update' : 'Create'} Template</button>
         </form>
-
         {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
       </div>
     </AdminDashboard>
   );
 };
 
-/* 🔹 Inline CSS Styles */
+// 🔹 Inline CSS Styles
 const cardContainerStyle = {
   maxWidth: '600px',
   margin: 'auto',
@@ -71,42 +88,32 @@ const cardContainerStyle = {
   padding: '20px',
   borderRadius: '10px',
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  textAlign: 'center'
+  textAlign: 'center',
 };
 
 const headingStyle = {
   fontSize: '22px',
   fontWeight: 'bold',
-  marginBottom: '15px'
+  marginBottom: '15px',
 };
 
 const formStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '10px'
+  gap: '10px',
 };
 
 const labelStyle = {
   fontSize: '16px',
   fontWeight: 'bold',
-  textAlign: 'left'
+  textAlign: 'left',
 };
 
 const inputStyle = {
   width: '100%',
   padding: '8px',
   borderRadius: '5px',
-  border: '1px solid #ccc'
-};
-
-const editorContainerStyle = {
-  minHeight: '150px',
-  padding: '10px',
   border: '1px solid #ccc',
-  borderRadius: '5px',
-  backgroundColor: 'white',
-  cursor: 'text',
-  textAlign: 'left'
 };
 
 const buttonStyle = {
@@ -116,13 +123,23 @@ const buttonStyle = {
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',
-  fontSize: '16px'
+  fontSize: '16px',
 };
 
 const errorStyle = {
   color: 'red',
   fontSize: '14px',
-  marginTop: '10px'
+  marginTop: '10px',
 };
 
 export default CreateTemplate;
+
+
+
+
+
+
+
+
+
+
