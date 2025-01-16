@@ -1,30 +1,25 @@
-// src/pages/AdminEndUserChat.js
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import AdminDashboard from "./AdminDashboard";
 import axios from 'axios';
-import AdminDashboard from './AdminDashboard';
 
-const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
+const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, selectedPlayer }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backgroundColor: 'rgb(255 255 255)',
-        borderRadius: '18px',
-      }}
-    >
-      <div
-        style={{
-          padding: '8px',
-          backgroundColor: 'rgb(88 98 97)',
-          color: '#fff',
-          textAlign: 'center',
-          borderRadius: '5px 5px 0 0',
-        }}
-      >
-        {/* <h2 style={{ fontSize: '16px' }}>Chat Room</h2> */}
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      backgroundColor: 'rgb(255 255 255)',
+      borderRadius: '18px',
+    }}>
+      <div style={{
+        padding: '8px',
+        backgroundColor: 'rgb(88 98 97)',
+        color: '#fff',
+        textAlign: 'center',
+        borderRadius: '5px 5px 0 0',
+      }}>
+        <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
         {selectedPlayer && (
           <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
             <p><strong>Chatting with:</strong> {selectedPlayer.playerName} (ID: {selectedPlayer.playerID})</p>
@@ -32,41 +27,24 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
         )}
       </div>
 
-      <div
-        style={{
-          flexGrow: 1,
-          padding: '8px',
-          backgroundColor: '#f0f0f0',
-          borderTop: '1px solid #ddd',
-          overflowY: 'auto',
-        }}
-      >
-        {currentTemplateDescription && (
-          <div style={{ padding: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px' }}>
-            <p>{currentTemplateDescription}</p>
-          </div>
-        )}
-        
-       </div>
+      {/* Input Field with currentTemplateDescription as value */}
+      <div style={{
+        padding: '8px',
+        backgroundColor: '#f0f0f0',
+        borderTop: '1px solid #ddd',
+        borderRadius: '0 0 5px 5px',
+      }}>
+        <form style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
 
-      <div
-        style={{
-          padding: '8px',
-          backgroundColor: '#f0f0f0',
-          borderTop: '1px solid #ddd',
-          borderRadius: '0 0 5px 5px',
-        }}
-      >
-        <form
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
           <input
             type="text"
             placeholder="Type a message..."
+            value={currentTemplateDescription}  // ✅ Append template description
+            onChange={(e) => setCurrentTemplateDescription(e.target.value)} // ✅ Allow editing
             style={{
               width: 'calc(100% - 120px)',
               padding: '8px',
@@ -74,7 +52,6 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
               border: '1px solid #ccc',
             }}
           />
-          
           <label
             style={{
               padding: '8px 12px',
@@ -107,7 +84,6 @@ const ChatUI = ({ currentTemplateDescription, selectedPlayer }) => {
               }}
             />
           </label>
-
           <button
             type="submit"
             style={{
@@ -150,7 +126,7 @@ const AdminEndUserChat = () => {
   const fetchAllPlayers = async () => {
     try {
       const response = await axios.get('http://localhost:5001/Player/getAllPlayers');
-      const filteredPlayers = response.data.data.filter(player => player.playerID !== "" && player.isAdmin === false);
+      const filteredPlayers = response.data.data.filter((player) => player.playerID !== "" && player.isAdmin === false);
 
       setPlayers(filteredPlayers);
     } catch (err) {
@@ -168,9 +144,8 @@ const AdminEndUserChat = () => {
   };
 
   return (
-    <div style={{ fontFamily: 'Roboto, sans-serif', display: 'flex', flexDirection: 'column', height: '100vh', padding: '16px', backgroundColor: 'rgb(231 228 228)' }}>
-      <AdminDashboard>
-     
+
+    <AdminDashboard>
 
       <div style={{ display: 'flex', flex: 1 }}>
         {/* Player List */}
@@ -198,12 +173,15 @@ const AdminEndUserChat = () => {
                     <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '0' }}>{player.playerName}</p>
                     <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}></p>
                   </div>
+
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '12px', color: '#4CAF50', margin: '0' }}>{`${Math.floor(Math.random() * 12) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`}</p>
+                    <p style={{ fontSize: '12px', color: '#4CAF50', margin: '0' }}>
+                      {`${Math.floor(Math.random() * 12) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`}
+                    </p>
                     <div
                       style={{
                         display: 'inline-block',
-                        backgroundColor: '#25D366',
+                        backgroundColor: Math.random() > 0.5 ? '#FFA500' : '#FF0000', // Randomly choose between orange and red
                         color: 'white',
                         fontSize: '12px',
                         fontWeight: 'bold',
@@ -223,13 +201,36 @@ const AdminEndUserChat = () => {
           )}
         </div>
 
-        {/* Chat UI */}
         <div style={{ flex: 1.5, padding: '16px', backgroundColor: 'rgb(200 200 200)', marginRight: '8px', borderRadius: '18px', display: 'flex', flexDirection: 'column' }}>
           <ChatUI currentTemplateDescription={currentTemplateDescription} selectedPlayer={selectedPlayer} />
         </div>
+
+        <div style={{ flex: 0.75, padding: '16px', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '18px', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+          {templates.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {templates.map((template) => (
+                <li
+                  key={template._id}
+                  onClick={() => setCurrentTemplateDescription(template.templateDescription)}
+                  style={{
+                    marginBottom: '8px',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <p style={{ fontSize: '14px' }}><strong>Template Name:</strong> {template.templateName}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No templates found</p>
+          )}
+        </div>
       </div>
-      </AdminDashboard>
-    </div>
+    </AdminDashboard>
+
   );
 };
 
