@@ -4,6 +4,18 @@ import EmojiPicker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import axios from 'axios';
 
+const badgeStyle = {
+  position: 'absolute',
+  top: '-5px',
+  right: '-10px',
+  backgroundColor: 'red',
+  color: 'white',
+  borderRadius: '50%',
+  padding: '5px 8px',
+  fontSize: '12px',
+  fontWeight: 'bold',
+};
+
 const Dashboard = () => {
   const location = useLocation();
   const { playerID } = location.state || {}; // Logged-in user's ID
@@ -122,40 +134,53 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ fontFamily: 'Roboto, sans-serif', height: '100vh', padding: '16px', backgroundColor: 'rgb(231, 228, 228)' }}>
-      <div style={{ textAlign: 'center', backgroundColor: 'rgb(88 98 97)', color: '#fff', padding: '8px' }}>
-        <h1 style={{ margin: 0 }}>Welcome - {playerID}</h1>
-      </div>
-      <div style={{ textAlign: 'right', backgroundColor: 'rgb(88 98 97)', color: '#fff', padding: '8px' }}>
-        <button
-          onClick={handleLogout}
-          style={{
+    <div style={{ fontFamily: 'Roboto, sans-serif', height: '80vh', padding: '16px', backgroundColor: 'rgb(231, 228, 228)' }}>
+      {/* 🔹 Horizontal Navbar (Header) */}
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#333',
+        padding: '10px 20px',
+        color: 'white'
+      }}>
+        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Dashboard</div>
+
+      
+
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ color: 'white', fontSize: '16px', marginRight: '100px' }}>
+            Welcome - {playerID}
+          </span>
+
+          <button onClick={handleLogout} style={{
             backgroundColor: '#dc3545',
             color: 'white',
             border: 'none',
-            padding: '4px 8px',
+            padding: '8px 16px',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '14px',
-          }}
-        >
-          Logout
-        </button>
-      </div>
+            fontSize: '14px'
+          }}>
+            Logout
+          </button>
+        </div>
+      </nav>
 
+      {/* 🔹 Page Content */}
       <div
         ref={chatContainerRef}
         style={{
           display: 'flex',
           flexDirection: 'column',
-          height: 'calc(100% - 100px)',
-          marginTop: '16px',
-          overflowY: 'auto',
+          height: 'calc(100vh - 200px)', // Fixed height, accounting for header and input form
+          overflowY: 'auto', // Allow scrolling if the content overflows
           padding: '16px',
           backgroundColor: '#fff',
           borderRadius: '8px',
           backgroundImage:
-            'linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.9)), url("https://png.pngtree.com/png-vector/20230726/ourmid/pngtree-colored-line-drawings-of-items-like-nintendo-ds-controller-png-image_6746109.png")',
+          'linear-gradient(rgb(255 255 255 / 82%), rgb(255 255 255 / 69%)), url(images/bg.JPEG)',
+        
         }}
       >
         {messages.map((msg, index) => (
@@ -177,10 +202,10 @@ const Dashboard = () => {
                 maxWidth: '60%',
                 padding: '10px',
                 borderRadius: '8px',
-                backgroundColor: msg.senderId === playerID ? '#d1e7dd' : '#f8d7da',
-                color: msg.senderId === playerID ? '#0f5132' : '#842029',
+                backgroundColor: msg.senderId === playerID ? 'rgb(209 231 221)' : 'rgb(209 231 221)',
+                color: msg.senderId === playerID ? 'rgb(0 0 0)' : 'rgb(0 0 0 / 58%)',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                border: msg.isSeen ? '1px solid #d1e7dd' : '2px solid #007bff',
+                border: msg.isSeen ? '1px solid #d1e7dd' : '1px solid rgb(0 123 255 / 37%)',
               }}
             >
               <p style={{ margin: 0 }}>{msg.message}</p>
@@ -204,6 +229,8 @@ const Dashboard = () => {
           </div>
         ))}
       </div>
+
+      {/* Input form */}
       <form
         style={{ display: 'flex', padding: '16px', backgroundColor: '#f8f9fa', alignItems: 'center' }}
         onSubmit={handleSendMessage}
@@ -259,6 +286,7 @@ const Dashboard = () => {
           {isSending ? 'Sending...' : 'Send'}
         </button>
       </form>
+
       {showEmojiPicker && (
         <div style={{ position: 'absolute', bottom: '100px', left: '16px', zIndex: 100 }}>
           <EmojiPicker data={data} onEmojiSelect={addEmoji} />
@@ -266,6 +294,15 @@ const Dashboard = () => {
       )}
     </div>
   );
+};
+
+// Reuse nav link style
+const navLinkStyle = {
+  color: 'white',
+  textDecoration: 'none',
+  padding: '8px 12px',
+  fontSize: '16px',
+  cursor: 'pointer'
 };
 
 export default Dashboard;

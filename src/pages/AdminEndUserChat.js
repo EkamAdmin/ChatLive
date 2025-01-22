@@ -38,7 +38,7 @@ const ChatUI = ({
         textAlign: 'center', 
         borderRadius: '5px 5px 0 0' 
       }}>
-        <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
+        {/* <h2 style={{ fontSize: '16px' }}>Chat Room</h2> */}
         {selectedPlayer && (
           <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
             <p><strong>Chatting with:</strong>(ID: {selectedPlayer.playerID})</p>
@@ -67,9 +67,10 @@ const ChatUI = ({
                 maxWidth: '60%',
                 padding: '10px',
                 borderRadius: '8px',
-                backgroundColor: msg.senderId === 'Admin' ? '#d1e7dd' : '#f8d7da',
-                color: msg.senderId === 'Admin' ? '#0f5132' : '#842029',
+                backgroundColor: msg.senderId === 'Admin' ? 'rgb(209 231 221)' : 'rgb(209 231 221)',
+                color: msg.senderId === 'Admin' ? 'rgb(0 0 0)' : 'rgb(0 0 0 / 58%)',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                border: msg.isSeen ? '1px solid #d1e7dd' : '1px solid rgb(0 123 255 / 37%)',
               }}
             >
               <p style={{ margin: 0 }}>{msg.message}</p>
@@ -138,6 +139,7 @@ const ChatUI = ({
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #ccc',
+              
             }}
           />
           <button
