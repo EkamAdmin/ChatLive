@@ -41,9 +41,8 @@ const AdminDashboard = ({ children }) => {
         <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Admin Dashboard</div>
 
         <div style={{ display: 'flex', gap: '20px', position: 'relative' }}>
-          <a href="#" style={navLinkStyle}>Home</a>
-          <a href="#" style={navLinkStyle} onClick={() => navigate('/SettingsTemplate')}>Settings</a>
-
+          <a style={navLinkStyle} onClick={() => navigate('/AdminDashboard')}>Home</a>
+          {/* <a style={navLinkStyle} onClick={() => navigate('/SettingsTemplate')}>Settings</a> */}
           {/* Templates Dropdown */}
           <div style={dropdownContainerStyle} 
             onMouseEnter={() => setDropdownOpen('templates')} 
@@ -67,14 +66,10 @@ const AdminDashboard = ({ children }) => {
               </div>
             )}
           </div>
-          <span onClick={() => navigate('/AdminNormalUserChat')} style={navLinkStyle}>
-                Normal User Chat
-                {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>}
-            </span>
-
+        
             <span onClick={() => navigate('/AdminEndUserChat')} style={navLinkStyle}>
                 End User Chat
-                {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>}
+                {/* {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>} */}
             </span>
         </div>
 

@@ -22,7 +22,7 @@ const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, sel
         <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
         {selectedPlayer && (
           <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
-            <p><strong>Chatting with:</strong> {selectedPlayer.playerName} (ID: {selectedPlayer.playerID})</p>
+            <p><strong>Chatting with:</strong> (ID: {selectedPlayer.playerID})</p>
           </div>
         )}
       </div>
@@ -170,7 +170,7 @@ const AdminNormalUserChat = () => {
                   }}
                 >
                   <div>
-                    <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '0' }}>{player.playerName}</p>
+                    
                     <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}></p>
                   </div>
 

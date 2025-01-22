@@ -10,12 +10,27 @@ const CreateMessage = () => {
   const { id } = useParams(); // Get message ID if editing
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isMessageExists, setIsMessageExists] = useState(false);
+
+  // Check if a welcome message already exists
+  useEffect(() => {
+    axios.get('http://localhost:5001/welcomeMessage/GetAllWelcomeMessages')
+      .then((response) => {
+        if (response.data && response.data.data.length > 0) {
+          setIsMessageExists(true);
+          if (!id) {
+            setErrorMessage('A welcome message already exists. You cannot add another.');
+          }
+        }
+      })
+      .catch(() => setErrorMessage('Error checking existing messages.'));
+  }, [id]);
 
   // Fetch existing message when editing
   useEffect(() => {
     if (id) {
       axios.get(`http://localhost:5001/welcomeMessage/GetWelcomeMessage/${id}`)
-        .then(response => {
+        .then((response) => {
           if (response.data && response.data.data) {
             setMessage(response.data.data.message);
           }
@@ -29,6 +44,11 @@ const CreateMessage = () => {
 
     if (!message) {
       setErrorMessage('Message is required');
+      return;
+    }
+
+    if (!id && isMessageExists) {
+      toast.error('A welcome message already exists. You cannot add another.');
       return;
     }
 
@@ -62,8 +82,11 @@ const CreateMessage = () => {
             onChange={(e) => setMessage(e.target.value)}
             required
             style={inputStyle}
+            disabled={!id && isMessageExists} // Disable if message already exists and not editing
           />
-          <button type="submit" style={buttonStyle}>{id ? 'Update' : 'Create'} Message</button>
+          <button type="submit" style={buttonStyle} disabled={!id && isMessageExists}>
+            {id ? 'Update' : 'Create'} Message
+          </button>
         </form>
         {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
       </div>
@@ -71,7 +94,7 @@ const CreateMessage = () => {
   );
 };
 
-// 🔹 Inline CSS Styles
+// Inline CSS Styles
 const cardContainerStyle = {
   maxWidth: '600px',
   margin: 'auto',
@@ -124,17 +147,3 @@ const errorStyle = {
 };
 
 export default CreateMessage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

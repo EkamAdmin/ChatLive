@@ -1,257 +1,271 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import EmojiPicker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 import axios from 'axios';
-
-const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, selectedPlayer }) => {
-  return (
-    <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backgroundColor: 'rgb(255 255 255)',
-        borderRadius: '18px',
-    }}>
-      <div style={{
-          padding: '8px',
-          backgroundColor: 'rgb(88 98 97)',
-          color: '#fff',
-          textAlign: 'center',
-          borderRadius: '5px 5px 0 0',
-      }}>
-        <h2 style={{ fontSize: '16px' }}>Chat Room</h2>
-        {selectedPlayer && (
-          <div style={{ fontSize: '14px', marginTop: '5px', color: '#fff' }}>
-            <p><strong>Chatting with:</strong> {selectedPlayer.playerName} (ID: {selectedPlayer.playerID})</p>
-          </div>
-        )}
-      </div>
-
-      {/* Input Field with currentTemplateDescription as value */}
-      <div style={{
-          padding: '8px',
-          backgroundColor: '#f0f0f0',
-          borderTop: '1px solid #ddd',
-          borderRadius: '0 0 5px 5px',
-      }}>
-        <form style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-        }}>
-          
-          <input
-            type="text"
-            placeholder="Type a message..."
-            value={currentTemplateDescription}  // ✅ Append template description
-            onChange={(e) => setCurrentTemplateDescription(e.target.value)} // ✅ Allow editing
-            style={{
-              width: 'calc(100% - 120px)',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-            }}
-          />
-          <label
-            style={{
-              padding: '8px 12px',
-              backgroundColor: '#28a745',
-              borderRadius: '4px',
-              color: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              marginLeft: '8px',
-            }}
-            title="Upload Document"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              className="bi bi-paperclip"
-              viewBox="0 0 16 16"
-              style={{ marginRight: '4px' }}
-            >
-              <path d="M4.146 4.146a3 3 0 0 1 4.242 4.243l-5.5 5.5a2 2 0 0 0 2.828 2.828l5.5-5.5a5 5 0 1 0-7.071-7.071L2.707 5.707a4 4 0 0 0 5.657 5.657l5.5-5.5a3 3 0 1 1 4.242 4.242l-5.5 5.5a6 6 0 0 1-8.485-8.485l5.5-5.5a1 1 0 0 1 1.414 1.414l-5.5 5.5a2 2 0 0 0 2.828 2.828l5.5-5.5a5 5 0 1 0-7.071-7.071z" />
-            </svg>
-            Upload
-            <input
-              type="file"
-              style={{
-                display: 'none',
-              }}
-            />
-          </label>
-          <button
-            type="submit"
-            style={{
-              padding: '10px 16px',
-              marginLeft: '8px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Send
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 const Dashboard = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { playerID } = location.state || {};
+  const { playerID } = location.state || {}; // Logged-in user's ID
 
-  const [templates, setTemplates] = useState([]);
-  const [players, setPlayers] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [currentTemplateDescription, setCurrentTemplateDescription] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState(null); // Track selected player
+  const [isSending, setIsSending] = useState(false);
+  const [file, setFile] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const chatContainerRef = useRef(null);
+  const fileInputRef = useRef(null); // Reference for the file input
+  const isAtBottomRef = useRef(true); // Tracks if the user is at the bottom of the chat
+  const navigate = useNavigate();
 
-  const fetchAllTemplates = async () => {
-    try {
-      const response = await axios.get('http://localhost:5001/template/GetAllTemplates');
-      setTemplates(response.data.data);
-    } catch (err) {
-      console.error('Error fetching templates');
+  // Scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
 
-  const fetchAllPlayers = async () => {
+  // Fetch messages and add welcome message if no messages exist
+  const fetchMessages = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/Player/getAllPlayers');
-      const filteredPlayers = response.data.data.filter((player) => player.playerID !== "" && player.isAdmin === false);
+      const response = await axios.get('http://localhost:5001/messages', {
+        params: { senderId: playerID },
+      });
+      const fetchedMessages = response.data.data;
 
-      setPlayers(filteredPlayers);
-    } catch (err) {
-      console.error('Error fetching players');
+      // If no messages exist, fetch welcome messages and add one if available
+      if (fetchedMessages.length === 0) {
+        const welcomeResponse = await axios.get('http://localhost:5001/welcomeMessage/GetAllWelcomeMessages');
+        const welcomeMessages = welcomeResponse.data.data;
+
+        if (welcomeMessages.length > 0) {
+          const defaultMessage = welcomeMessages[0]; // Use the first welcome message
+          setMessages([{
+            senderId: 'Admin',
+            receiverId: playerID,
+            message: defaultMessage.message,
+            timestamp: defaultMessage.createdDate,
+            isSeen: true,
+          }]);
+        }
+      } else {
+        setMessages(fetchedMessages);
+      }
+
+      await axios.put('http://localhost:5001/messages/markAsSeen', {
+        senderId: 'Admin',
+        receiverId: playerID,
+      });
+
+      if (isAtBottomRef.current) {
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
     }
   };
 
   useEffect(() => {
-    fetchAllTemplates();
-    fetchAllPlayers();
-  }, []);
+    if (playerID) {
+      fetchMessages();
+      const intervalId = setInterval(fetchMessages, 1000);
+      return () => clearInterval(intervalId);
+    }
+  }, [playerID]);
 
-  const handlePlayerClick = (player) => {
-    setSelectedPlayer(player); // Set selected player when clicked
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!currentTemplateDescription.trim() && !file) return;
+
+    setIsSending(true);
+
+    const formData = new FormData();
+    formData.append('senderId', playerID);
+    formData.append('receiverId', 'Admin');
+    formData.append('message', currentTemplateDescription);
+    if (file) {
+      formData.append('file', file);
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5001/messages/send', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setMessages((prevMessages) => [...prevMessages, response.data.data]);
+      setCurrentTemplateDescription('');
+      setFile(null);
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      scrollToBottom();
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const addEmoji = (emoji) => {
+    setCurrentTemplateDescription((prev) => prev + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
+    navigate('/');
   };
 
   return (
-    <div style={{ fontFamily: 'Roboto, sans-serif', display: 'flex', flexDirection: 'column', height: '100vh', padding: '16px', backgroundColor: 'rgb(231 228 228)' }}>
-      <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: 'rgb(88 98 97)', color: '#fff', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h1 style={{ fontSize: '20px', flex: 1, textAlign: 'center', margin: 0 }}>Welcome - {playerID}</h1>
+    <div style={{ fontFamily: 'Roboto, sans-serif', height: '100vh', padding: '16px', backgroundColor: 'rgb(231, 228, 228)' }}>
+      <div style={{ textAlign: 'center', backgroundColor: 'rgb(88 98 97)', color: '#fff', padding: '8px' }}>
+        <h1 style={{ margin: 0 }}>Welcome - {playerID}</h1>
+      </div>
+      <div style={{ textAlign: 'right', backgroundColor: 'rgb(88 98 97)', color: '#fff', padding: '8px' }}>
         <button
-          onClick={() => { localStorage.removeItem('authToken'); sessionStorage.removeItem('authToken'); navigate('/'); }}
+          onClick={handleLogout}
           style={{
             backgroundColor: '#dc3545',
-            color: '#fff',
+            color: 'white',
             border: 'none',
-            padding: '8px 16px',
+            padding: '4px 8px',
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '14px',
-            position: 'absolute',
-            right: '30px',
           }}
         >
           Logout
         </button>
       </div>
 
-      <div style={{ display: 'flex', flex: 1 }}>
-        {/* Player List */}
-        <div style={{ flex: 0.75, padding: '16px', backgroundColor: 'rgb(249, 249, 249)', marginRight: '8px', borderRadius: '18px', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
-          <h3 style={{ fontSize: '18px', textAlign: 'center' }}>All Players</h3>
-          {players.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {players.map((player) => (
-                <li
-                  key={player._id}
-                  onClick={() => handlePlayerClick(player)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '8px',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '12px',
-                    backgroundColor: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: 'bold', margin: '0' }}>{player.playerName}</p>
-                    <p style={{ fontSize: '12px', color: '#555', margin: '2px 0' }}></p>
-                  </div>
-                 
-                  <div style={{ textAlign: 'right' }}>
-  <p style={{ fontSize: '12px', color: '#4CAF50', margin: '0' }}>
-    {`${Math.floor(Math.random() * 12) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`}
-  </p>
-  <div
-    style={{
-      display: 'inline-block',
-      backgroundColor: Math.random() > 0.5 ? '#FFA500' : '#FF0000', // Randomly choose between orange and red
-      color: 'white',
-      fontSize: '12px',
-      fontWeight: 'bold',
-      padding: '5px 8px',
-      borderRadius: '50%',
-      textAlign: 'center',
-    }}
-  >
-    {Math.floor(Math.random() * 10)}
-  </div>
-</div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={{ textAlign: 'center', color: '#555' }}>No players found</p>
-          )}
-        </div>
+      <div
+        ref={chatContainerRef}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: 'calc(100% - 100px)',
+          marginTop: '16px',
+          overflowY: 'auto',
+          padding: '16px',
+          backgroundColor: '#fff',
+          borderRadius: '8px',
+          backgroundImage:
+            'linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.9)), url("https://png.pngtree.com/png-vector/20230726/ourmid/pngtree-colored-line-drawings-of-items-like-nintendo-ds-controller-png-image_6746109.png")',
+        }}
+      >
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: msg.senderId === playerID ? 'flex-end' : 'flex-start',
+              marginBottom: '12px',
+            }}
+          >
+            <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#6c757d' }}>
+              {msg.senderId}
+            </div>
 
-        <div style={{ flex: 1.5, padding: '16px', backgroundColor: 'rgb(200 200 200)', marginRight: '8px', borderRadius: '18px', display: 'flex', flexDirection: 'column' }}>
-          <ChatUI currentTemplateDescription={currentTemplateDescription} selectedPlayer={selectedPlayer} />
-        </div>
-
-        <div style={{ flex: 0.75, padding: '16px', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '18px', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
-          {templates.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {templates.map((template) => (
-                <li
-                  key={template._id}
-                  onClick={() => setCurrentTemplateDescription(template.templateDescription)}
-                  style={{
-                    marginBottom: '8px',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <p style={{ fontSize: '14px' }}><strong>Template Name:</strong> {template.templateName}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No templates found</p>
-          )}
-        </div>
+            <div
+              style={{
+                maxWidth: '60%',
+                padding: '10px',
+                borderRadius: '8px',
+                backgroundColor: msg.senderId === playerID ? '#d1e7dd' : '#f8d7da',
+                color: msg.senderId === playerID ? '#0f5132' : '#842029',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                border: msg.isSeen ? '1px solid #d1e7dd' : '2px solid #007bff',
+              }}
+            >
+              <p style={{ margin: 0 }}>{msg.message}</p>
+              <small style={{ display: 'block', marginTop: '5px', fontSize: '12px', color: '#6c757d' }}>
+                {new Date(msg.timestamp).toLocaleString()}
+              </small>
+              {msg.fileUrl && (
+                msg.fileType === '.pdf' ? (
+                  <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer">
+                    View PDF
+                  </a>
+                ) : (
+                  <img
+                    src={msg.fileUrl}
+                    alt="Uploaded file"
+                    style={{ maxWidth: '200px', borderRadius: '8px', marginTop: '8px' }}
+                  />
+                )
+              )}
+            </div>
+          </div>
+        ))}
       </div>
+      <form
+        style={{ display: 'flex', padding: '16px', backgroundColor: '#f8f9fa', alignItems: 'center' }}
+        onSubmit={handleSendMessage}
+      >
+        <button
+          type="button"
+          onClick={() => setShowEmojiPicker((prev) => !prev)}
+          style={{
+            padding: '10px',
+            backgroundColor: '#e9ecef',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginRight: '8px',
+          }}
+        >
+          😊
+        </button>
+        <input
+          type="file"
+          accept="image/*,.pdf"
+          ref={fileInputRef} // Attach the ref here
+          onChange={(e) => setFile(e.target.files[0])}
+          style={{
+            marginRight: '8px',
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={currentTemplateDescription}
+          onChange={(e) => setCurrentTemplateDescription(e.target.value)}
+          style={{
+            flex: 1,
+            padding: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            marginLeft: '8px',
+            padding: '10px 16px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+          disabled={isSending}
+        >
+          {isSending ? 'Sending...' : 'Send'}
+        </button>
+      </form>
+      {showEmojiPicker && (
+        <div style={{ position: 'absolute', bottom: '100px', left: '16px', zIndex: 100 }}>
+          <EmojiPicker data={data} onEmojiSelect={addEmoji} />
+        </div>
+      )}
     </div>
   );
 };
 
 export default Dashboard;
-
-
-
-

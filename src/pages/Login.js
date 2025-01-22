@@ -4,37 +4,91 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [playerID, setPlayerID] = useState('');
-  const [playerName, setPlayerName] = useState('');
+  // const [playerName, setPlayerName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    if (!playerID || !playerName) {
-      setErrorMessage('Both fields are required.');
-      return;
-    }
+  // const handleLogin = async () => {
+  //   if (!playerID || !playerName) {
+  //     setErrorMessage('Both fields are required.');
+  //     return;
+  //   }
 
-    try {
-      const response = await axios.get(`http://localhost:5001/player/GetByPlayerID/${playerID}`);
-      if (response.data.message === 'Player found') {
-
-       const player = response.data.data;
-        // Store the auth token in localStorage
-         localStorage.setItem('authToken', player.playerID);  // Assuming playerID is the token
+  //   try {
+  //     const response = await axios.get(`http://localhost:5001/player/GetByPlayerID/${playerID}`);
+  //     if (response.data.message === 'Player found') {
+  //     alert(response.data.message);
+  //      const player = response.data.data;
+  //       // Store the auth token in localStorage
+  //        localStorage.setItem('authToken', player.playerID);  // Assuming playerID is the token
         
+  //       if (player.isAdmin) {
+  //         navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+  //       } else {
+  //         navigate('/Dashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+  //       }
+  //     } else {
+  //       setErrorMessage('Player not found');
+  //     }
+  //   } catch (error) {
+  //     setErrorMessage('Error connecting to the server');
+  //   }
+  // };
+
+  const handleLogin = async () => {
+    // if (!playerID || !playerName) {
+    //   setErrorMessage('Both fields are required.');
+    //   return;
+    // }
+  
+    try {
+      // Check if the player exists
+      const response = await axios.get(`http://localhost:5001/player/GetByPlayerID/${playerID}`);
+
+      if (response.data.message === 'Player found') {
+        const player = response.data.data;
+        
+        // Store the auth token in localStorage
+        localStorage.setItem('authToken', player.playerID);
+  
         if (player.isAdmin) {
-          navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+          // navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+          navigate('/AdminDashboard', { state: { playerID, isAdmin: player.isAdmin } });
         } else {
-          navigate('/Dashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+          // navigate('/Dashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
+          navigate('/Dashboard', { state: { playerID, isAdmin: player.isAdmin } });
         }
       } else {
-        setErrorMessage('Player not found');
+        
+        // If player not found, add them to the database
+        const newPlayerResponse = await axios.post('http://localhost:5001/player/AddPlayer', {
+          playerID,
+          // playerName,
+          isAdmin: false, // Defaulting isAdmin to false for new players
+        });
+        
+      console.log(newPlayerResponse.data.message);
+
+        if (newPlayerResponse.data.message === 'Player added successfully') {
+        
+          const newPlayer = newPlayerResponse.data.data;
+          
+          // Store the auth token in localStorage
+          localStorage.setItem('authToken', newPlayer.playerID);
+  
+          // navigate('/Dashboard', { state: { playerID, playerName, isAdmin: newPlayer.isAdmin } });
+          navigate('/Dashboard', { state: { playerID, isAdmin: newPlayer.isAdmin } });
+        } else {
+          setErrorMessage('Error adding new player');
+        }
       }
     } catch (error) {
-      setErrorMessage('Error connecting to the server');
+      alert('New User Added, Relogin 1 more time')
+      // alert(error);
+      // setErrorMessage('Error connecting to the server');
     }
   };
-
+  
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -49,13 +103,13 @@ const Login = () => {
             onChange={(e) => setPlayerID(e.target.value)}
             style={styles.input}
           />
-          <input
+          {/* <input
             type="password"
             placeholder="Enter Password"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             style={styles.input}
-          />
+          /> */}
           <button onClick={handleLogin} style={styles.button}>Login</button>
           {errorMessage && <p style={styles.error}>{errorMessage}</p>}
         </div>
