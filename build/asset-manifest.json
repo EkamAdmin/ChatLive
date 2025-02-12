@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/ChatLive/static/css/main.40df3699.css",
+    "main.js": "/ChatLive/static/js/main.352f12cb.js",
+    "index.html": "/ChatLive/index.html",
+    "main.40df3699.css.map": "/ChatLive/static/css/main.40df3699.css.map",
+    "main.352f12cb.js.map": "/ChatLive/static/js/main.352f12cb.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40df3699.css",
+    "static/js/main.352f12cb.js"
+  ]
+}
