@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
+import SuperAdminDashboard from './SuperAdminDashboard';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const ViewMessage = () => {
   const [messages, setMessages] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5001/welcomeMessage/GetAllWelcomeMessages')
+    axios.get(`${baseURL}/welcomeMessage/GetAllWelcomeMessages`)
       .then(response => setMessages(response.data.data))
       .catch(() => console.error("Error fetching messages"));
   }, []);
@@ -23,7 +24,7 @@ const ViewMessage = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5001/welcomeMessage/DeleteWelcomeMessage/${id}`);
+      await axios.delete(`${baseURL}/welcomeMessage/DeleteWelcomeMessage/${id}`);
       setMessages(messages.filter((msg) => msg._id !== id));
       toast.success('Message deleted successfully!');
     } catch (err) {
@@ -32,7 +33,7 @@ const ViewMessage = () => {
   };
 
   return (
-    <AdminDashboard>
+    <SuperAdminDashboard>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Welcome Messages</h2>
       <div style={cardContainerStyle}>
         {messages.length > 0 ? (
@@ -49,7 +50,7 @@ const ViewMessage = () => {
           <p>No messages found</p>
         )}
       </div>
-    </AdminDashboard>
+    </SuperAdminDashboard>
   );
 };
 

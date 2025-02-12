@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, selectedPlayer }) => {
   const [isSending, setIsSending] = useState(false);
@@ -24,7 +25,7 @@ const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, sel
     };
 
     try {
-      const response = await axios.post('http://localhost:5001/api/messages/send', payload);
+      const response = await axios.post(`${baseURL}/messages/send`, payload);
       console.log('Message sent:', response.data);
 
       // Optionally clear the input field

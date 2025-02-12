@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const SettingsTemplate = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const SettingsTemplate = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5001/template/AddTemplate', {
+      const response = await axios.post(`${baseURL}/template/AddTemplate`, {
         templateName,
         templateDescription, // Save the Draft.js content as JSON
       });

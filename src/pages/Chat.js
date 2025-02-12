@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import socket from './Socket'; // Import the socket instance
 import ChatUI from './ChatUI'; // Import the ChatUI component
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const Chat = ({ currentUserId, selectedUserId }) => {
   const [messages, setMessages] = useState([]);
@@ -12,7 +13,7 @@ const Chat = ({ currentUserId, selectedUserId }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/messages`, {
+        const response = await axios.get(`${baseURL}/messages`, {
           params: {
             senderId: currentUserId,
             receiverId: selectedUserId,
@@ -66,7 +67,7 @@ const Chat = ({ currentUserId, selectedUserId }) => {
 
       // Optionally save to backend (if required)
       try {
-        await axios.post('http://localhost:5001/messages/send', messageData);
+        await axios.post(`${baseURL}/messages/send`, messageData);
       } catch (err) {
         console.error('Error sending message:', err);
       }

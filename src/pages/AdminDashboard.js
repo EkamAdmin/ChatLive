@@ -42,34 +42,8 @@ const AdminDashboard = ({ children }) => {
 
         <div style={{ display: 'flex', gap: '20px', position: 'relative' }}>
           <a style={navLinkStyle} onClick={() => navigate('/AdminDashboard')}>Home</a>
-          {/* <a style={navLinkStyle} onClick={() => navigate('/SettingsTemplate')}>Settings</a> */}
-          {/* Templates Dropdown */}
-          <div style={dropdownContainerStyle} 
-            onMouseEnter={() => setDropdownOpen('templates')} 
-            onMouseLeave={() => setDropdownOpen(null)}>
-            <span style={navLinkStyle}>Templates ▼</span>
-            {dropdownOpen === 'templates' && (
-              <div style={dropdownMenuStyle}>
-                <span onClick={() => navigate('/CreateTemplate')} style={dropdownItemStyle}>Create Template</span>
-                <span onClick={() => navigate('/ViewTemplate')} style={dropdownItemStyle}>View Template</span>
-              </div>
-            )}
-          </div>
-		  <div style={dropdownContainerStyle} 
-            onMouseEnter={() => setDropdownOpen('welcome')} 
-            onMouseLeave={() => setDropdownOpen(null)}>
-            <span style={navLinkStyle}>Welcome Messages ▼</span>
-            {dropdownOpen === 'welcome' && (
-              <div style={dropdownMenuStyle}>
-                <span onClick={() => navigate('/CreateMessage')} style={dropdownItemStyle}>Create Message</span>
-                <span onClick={() => navigate('/ViewMessage')} style={dropdownItemStyle}>View Message</span>
-              </div>
-            )}
-          </div>
-        
             <span onClick={() => navigate('/AdminEndUserChat')} style={navLinkStyle}>
                 End User Chat
-                {/* {endUserMessages > 0 && <span style={badgeStyle}>{endUserMessages}</span>} */}
             </span>
         </div>
 

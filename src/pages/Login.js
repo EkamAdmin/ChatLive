@@ -8,63 +8,32 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  // const handleLogin = async () => {
-  //   if (!playerID || !playerName) {
-  //     setErrorMessage('Both fields are required.');
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await axios.get(`http://localhost:5001/player/GetByPlayerID/${playerID}`);
-  //     if (response.data.message === 'Player found') {
-  //     alert(response.data.message);
-  //      const player = response.data.data;
-  //       // Store the auth token in localStorage
-  //        localStorage.setItem('authToken', player.playerID);  // Assuming playerID is the token
-        
-  //       if (player.isAdmin) {
-  //         navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
-  //       } else {
-  //         navigate('/Dashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
-  //       }
-  //     } else {
-  //       setErrorMessage('Player not found');
-  //     }
-  //   } catch (error) {
-  //     setErrorMessage('Error connecting to the server');
-  //   }
-  // };
-
   const handleLogin = async () => {
-    // if (!playerID || !playerName) {
-    //   setErrorMessage('Both fields are required.');
-    //   return;
-    // }
+    const baseURL = process.env.REACT_APP_BASE_URL;
   
     try {
-      // Check if the player exists
-      const response = await axios.get(`http://localhost:5001/player/GetByPlayerID/${playerID}`);
-
+      const response = await axios.get(`${baseURL}/player/GetByPlayerID/${playerID}`);
+      //console.log(response.data);
       if (response.data.message === 'Player found') {
         const player = response.data.data;
+
         
-        // Store the auth token in localStorage
-        localStorage.setItem('authToken', player.playerID);
-  
-        if (player.isAdmin) {
-          // navigate('/AdminDashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
-          navigate('/AdminDashboard', { state: { playerID, isAdmin: player.isAdmin } });
-        } else {
-          // navigate('/Dashboard', { state: { playerID, playerName, isAdmin: player.isAdmin } });
-          navigate('/Dashboard', { state: { playerID, isAdmin: player.isAdmin } });
+        localStorage.setItem('authToken', response.data.data.userId);
+
+        if (player.roleId === 1) {
+          navigate('/SuperAdminDashboard', { state: { playerID, isSuperAdmin: player.isSuperAdmin } });
+        }
+        else if (player.roleId === 2) {
+          navigate('/AdminDashboard', { state: { playerID, roleId: player.roleId } });
+        } 
+        else if (player.roleId === 3) {
+          navigate('/Dashboard', { state: { playerID, roleId: player.roleId } });
         }
       } else {
         
         // If player not found, add them to the database
-        const newPlayerResponse = await axios.post('http://localhost:5001/player/AddPlayer', {
-          playerID,
-          // playerName,
-          isAdmin: false, // Defaulting isAdmin to false for new players
+        const newPlayerResponse = await axios.post(`${baseURL}/player/AddPlayer`, {
+          playerID
         });
         
       console.log(newPlayerResponse.data.message);
@@ -75,9 +44,8 @@ const Login = () => {
           
           // Store the auth token in localStorage
           localStorage.setItem('authToken', newPlayer.playerID);
-  
-          // navigate('/Dashboard', { state: { playerID, playerName, isAdmin: newPlayer.isAdmin } });
-          navigate('/Dashboard', { state: { playerID, isAdmin: newPlayer.isAdmin } });
+
+          navigate('/Dashboard', { state: { playerID, roleId: newPlayer.roleId } });
         } else {
           setErrorMessage('Error adding new player');
         }

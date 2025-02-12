@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
+import SuperAdminDashboard from './SuperAdminDashboard';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const ViewTemplate = () => {
   const [templates, setTemplates] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5001/template/GetAllTemplates')
+    axios.get(`${baseURL}/template/GetAllTemplates`)
       .then(response => setTemplates(response.data.data))
       .catch(() => console.error("Error fetching templates"));
   }, []);
@@ -23,7 +24,7 @@ const ViewTemplate = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5001/template/DeleteTemplate/${id}`);
+      await axios.delete(`${baseURL}/template/DeleteTemplate/${id}`);
       setTemplates(templates.filter((template) => template._id !== id));
       toast.success('Template deleted successfully!');
     } catch (err) {
@@ -32,7 +33,7 @@ const ViewTemplate = () => {
   };
 
   return (
-    <AdminDashboard>
+    <SuperAdminDashboard>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Templates</h2>
       <div style={cardContainerStyle}>
         {templates.length > 0 ? (
@@ -50,7 +51,7 @@ const ViewTemplate = () => {
           <p>No templates found</p>
         )}
       </div>
-    </AdminDashboard>
+    </SuperAdminDashboard>
   );
 };
 

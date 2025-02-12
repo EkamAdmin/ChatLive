@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
+import SuperAdminDashboard from './SuperAdminDashboard';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const CreateMessage = () => {
   const navigate = useNavigate();
@@ -14,30 +15,30 @@ const CreateMessage = () => {
 
   // Check if a welcome message already exists
   useEffect(() => {
-    axios.get('http://localhost:5001/welcomeMessage/GetAllWelcomeMessages')
+    axios.get(`${baseURL}/GetAllWelcomeMessages`)
       .then((response) => {
         if (response.data && response.data.data.length > 0) {
+          console.log(response.data);
           setIsMessageExists(true);
           if (!id) {
             setErrorMessage('A welcome message already exists. You cannot add another.');
           }
         }
       })
-      .catch(() => setErrorMessage('Error checking existing messages.'));
+      .catch(() => setErrorMessage(''));
   }, [id]);
 
-  // Fetch existing message when editing
   useEffect(() => {
-    if (id) {
-      axios.get(`http://localhost:5001/welcomeMessage/GetWelcomeMessage/${id}`)
-        .then((response) => {
-          if (response.data && response.data.data) {
-            setMessage(response.data.data.message);
-          }
-        })
-        .catch(() => setErrorMessage('Error fetching message.'));
-    }
-  }, [id]);
+    if (!id) return; // Prevent API call when id is null, undefined, or empty
+  
+    axios.get(`${baseURL}/GetWelcomeMessage/${id}`)
+      .then((response) => {
+        if (response.data?.data?.message) {
+          setMessage(response.data.data.message);
+        }
+      })
+      .catch(() => setErrorMessage('Error fetching message.'));
+  }, [id]);  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,9 +61,9 @@ const CreateMessage = () => {
 
     try {
       if (id) {
-        await axios.put(`http://localhost:5001/welcomeMessage/UpdateWelcomeMessage/${id}`, { message });
+        await axios.put(`${baseURL}/welcomeMessage/UpdateWelcomeMessage/${id}`, { message });
       } else {
-        await axios.post('http://localhost:5001/welcomeMessage/AddWelcomeMessage', { message });
+        await axios.post(`${baseURL}/welcomeMessage/AddWelcomeMessage`, { message });
       }
       toast.success('Message saved successfully!');
       navigate('/ViewMessage');
@@ -72,7 +73,7 @@ const CreateMessage = () => {
   };
 
   return (
-    <AdminDashboard>
+    <SuperAdminDashboard>
       <div style={cardContainerStyle}>
         <h2 style={headingStyle}>{id ? 'Update' : 'Create'} Welcome Message</h2>
         <form onSubmit={handleSubmit} style={formStyle}>
@@ -90,7 +91,7 @@ const CreateMessage = () => {
         </form>
         {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
       </div>
-    </AdminDashboard>
+    </SuperAdminDashboard>
   );
 };
 

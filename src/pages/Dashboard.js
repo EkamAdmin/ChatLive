@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import EmojiPicker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import axios from 'axios';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const badgeStyle = {
   position: 'absolute',
@@ -40,20 +41,22 @@ const Dashboard = () => {
   // Fetch messages and add welcome message if no messages exist
   const fetchMessages = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/messages', {
+      const response = await axios.get(`${baseURL}/messages`, {
+        
         params: { senderId: playerID },
       });
-      const fetchedMessages = response.data.data;
-
+      console.log(response.data.data);
+      const fetchedMessages = response.data.data.filter(message => message.senderId === playerID || message.receiverId === playerID);
+      console.log(response.data.data);
       // If no messages exist, fetch welcome messages and add one if available
       if (fetchedMessages.length === 0) {
-        const welcomeResponse = await axios.get('http://localhost:5001/welcomeMessage/GetAllWelcomeMessages');
+        const welcomeResponse = await axios.get(`${baseURL}/welcomeMessage/GetAllWelcomeMessages`);
         const welcomeMessages = welcomeResponse.data.data;
 
         if (welcomeMessages.length > 0) {
           const defaultMessage = welcomeMessages[0]; // Use the first welcome message
           setMessages([{
-            senderId: 'Admin',
+            senderId: '',
             receiverId: playerID,
             message: defaultMessage.message,
             timestamp: defaultMessage.createdDate,
@@ -64,14 +67,14 @@ const Dashboard = () => {
         setMessages(fetchedMessages);
       }
 
-      await axios.put('http://localhost:5001/messages/markAsSeen', {
-        senderId: 'Admin',
+      await axios.put(`${baseURL}/messages/markAsSeen`, {
+        senderId: '',
         receiverId: playerID,
       });
 
-      if (isAtBottomRef.current) {
-        scrollToBottom();
-      }
+      // if (isAtBottomRef.current) {
+      //   scrollToBottom();
+      // }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -93,14 +96,15 @@ const Dashboard = () => {
 
     const formData = new FormData();
     formData.append('senderId', playerID);
-    formData.append('receiverId', 'Admin');
+    formData.append('receiverId', 'nullll');
     formData.append('message', currentTemplateDescription);
+	  formData.append('isDeleted', false);
     if (file) {
       formData.append('file', file);
     }
-
+    console.log(formData);
     try {
-      const response = await axios.post('http://localhost:5001/messages/send', formData, {
+      const response = await axios.post(`${baseURL}/messages/send`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -194,7 +198,7 @@ const Dashboard = () => {
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#6c757d' }}>
-              {msg.senderId}
+             {msg.senderId}
             </div>
 
             <div
@@ -214,7 +218,7 @@ const Dashboard = () => {
               </small>
               {msg.fileUrl && (
                 msg.fileType === '.pdf' ? (
-                  <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" download="downloaded_file.pdf">
                     View PDF
                   </a>
                 ) : (
@@ -230,63 +234,90 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Input form */}
+     
       <form
-        style={{ display: 'flex', padding: '16px', backgroundColor: '#f8f9fa', alignItems: 'center' }}
-        onSubmit={handleSendMessage}
-      >
-        <button
-          type="button"
-          onClick={() => setShowEmojiPicker((prev) => !prev)}
-          style={{
-            padding: '10px',
-            backgroundColor: '#e9ecef',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginRight: '8px',
-          }}
-        >
-          😊
-        </button>
-        <input
-          type="file"
-          accept="image/*,.pdf"
-          ref={fileInputRef} // Attach the ref here
-          onChange={(e) => setFile(e.target.files[0])}
-          style={{
-            marginRight: '8px',
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={currentTemplateDescription}
-          onChange={(e) => setCurrentTemplateDescription(e.target.value)}
-          style={{
-            flex: 1,
-            padding: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
-        />
-        <button
-          type="submit"
-          style={{
-            marginLeft: '8px',
-            padding: '10px 16px',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-          disabled={isSending}
-        >
-          {isSending ? 'Sending...' : 'Send'}
-        </button>
-      </form>
+  style={{
+    display: 'flex',
+    padding: '16px',
+    backgroundColor: '#3e3e3e',
+    alignItems: 'center',
+    borderRadius: '24px', // Added rounded corners for a cleaner look
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+  }}
+  onSubmit={handleSendMessage}
+>
+  {/* Emoji Picker Button */}
+  <button
+    type="button"
+    onClick={() => setShowEmojiPicker((prev) => !prev)}
+    style={{
+      backgroundColor: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      marginRight: '12px',
+      fontSize: '20px', // Emoji icon size
+      color: '#fff', // White icon color
+    }}
+  >
+    😊
+  </button>
 
+   {/* File Input */}
+   <input
+    type="file"
+    accept="image/*,.pdf"
+    ref={fileInputRef}
+    onChange={(e) => setFile(e.target.files[0])}
+    style={{
+      display: 'none', // Hide file input
+    }}
+    id="fileInput"
+  />
+  <label
+    htmlFor="fileInput"
+    style={{
+      cursor: 'pointer',
+      marginRight: '12px',
+      color: '#00FF7F', // Accent color for the file icon
+      fontSize: '20px',
+    }}
+  >
+    📎
+  </label>
+
+  {/* Text Input */}
+  <input
+    type="text"
+    placeholder="Type a message..."
+    value={currentTemplateDescription}
+    onChange={(e) => setCurrentTemplateDescription(e.target.value)}
+    style={{
+      flex: 1,
+      padding: '10px',
+      border: '1px solid #ccc',
+      borderRadius: '24px', // Rounded input for consistency
+      backgroundColor: '#fff',
+      marginRight: '8px',
+      outline: 'none', // Remove outline on focus
+    }}
+  />
+  <button
+    type="submit"
+    style={{
+      marginLeft: '12px',
+      backgroundColor: '#32CD32', // Green "send" button
+      border: 'none',
+      borderRadius: '24px',
+      padding: '10px 20px',
+      color: '#fff',
+      fontSize: '16px',
+      cursor: 'pointer',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    }}
+  >
+    ➤
+  </button>
+</form>
       {showEmojiPicker && (
         <div style={{ position: 'absolute', bottom: '100px', left: '16px', zIndex: 100 }}>
           <EmojiPicker data={data} onEmojiSelect={addEmoji} />

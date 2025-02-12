@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
+import SuperAdminDashboard from './SuperAdminDashboard';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const CreateTemplate = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const CreateTemplate = () => {
   // Fetch existing template when editing
   useEffect(() => {
     if (id) {
-      axios.get(`http://localhost:5001/template/GetTemplate/${id}`)
+      axios.get(`${baseURL}/template/GetTemplate/${id}`)
         .then(response => {
           if (response.data && response.data.data) {
             setTemplateName(response.data.data.templateName);
@@ -42,9 +43,9 @@ const CreateTemplate = () => {
 
     try {
       if (id) {
-        await axios.put(`http://localhost:5001/template/UpdateTemplate/${id}`, { templateName, templateDescription });
+        await axios.put(`${baseURL}/template/UpdateTemplate/${id}`, { templateName, templateDescription });
       } else {
-        await axios.post('http://localhost:5001/template/AddTemplate', { templateName, templateDescription });
+        await axios.post(`${baseURL}/template/AddTemplate`, { templateName, templateDescription });
       }
       toast.success('Template saved successfully!');
       navigate('/ViewTemplate');
@@ -54,7 +55,7 @@ const CreateTemplate = () => {
   };
 
   return (
-    <AdminDashboard>
+    <SuperAdminDashboard>
       <div style={cardContainerStyle}>
         <h2 style={headingStyle}>{id ? 'Update' : 'Create'} Template</h2>
         <form onSubmit={handleSubmit} style={formStyle}>
@@ -76,7 +77,7 @@ const CreateTemplate = () => {
         </form>
         {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
       </div>
-    </AdminDashboard>
+    </SuperAdminDashboard>
   );
 };
 

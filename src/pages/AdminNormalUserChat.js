@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AdminDashboard from "./AdminDashboard";
 import axios from 'axios';
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const ChatUI = ({ currentTemplateDescription, setCurrentTemplateDescription, selectedPlayer }) => {
   return (
@@ -116,7 +117,7 @@ const AdminNormalUserChat = () => {
 
   const fetchAllTemplates = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/template/GetAllTemplates');
+      const response = await axios.get(`${baseURL}/template/GetAllTemplates`);
       setTemplates(response.data.data);
     } catch (err) {
       console.error('Error fetching templates');
@@ -125,8 +126,8 @@ const AdminNormalUserChat = () => {
 
   const fetchAllPlayers = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/Player/getAllPlayers');
-      const filteredPlayers = response.data.data.filter((player) => player.playerID !== "" && player.isAdmin === false);
+      const response = await axios.get(`${baseURL}/Player/getAllPlayers`);
+      const filteredPlayers = response.data.data.filter((player) => player.playerID !== "");
 
       setPlayers(filteredPlayers);
     } catch (err) {
